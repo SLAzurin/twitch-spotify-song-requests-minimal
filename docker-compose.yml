@@ -15,14 +15,3 @@ services:
       - .env
     environment:
       - GIN_MODE=release
-  appws:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        - MAINFILE=appws
-    restart: unless-stopped
-    env_file:
-      - .env
-    depends_on:
-      - app
