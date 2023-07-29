@@ -176,7 +176,7 @@ func ProcessSongRequestSpotify(irc *IRCConn, channel string, permissionLevel int
 	// text search
 	if TrackID == "" {
 		ctx := context.Background()
-		result, err := state.SpotifyClient.Search(ctx, strings.Join(brokenMsg[1:], " "), spotify.SearchTypeTrack, spotify.Market(data.AppCfg.SpotifyRegion), spotify.Limit(1)) // TODO: use target profile country code
+		result, err := state.SpotifyClient.Search(ctx, strings.Join(brokenMsg[1:], " "), spotify.SearchTypeTrack, spotify.Market(data.AppCfg.SpotifyRegion), spotify.Limit(1))
 		if err != nil {
 			irc.MsgChan <- Chat("Error when searching track "+err.Error(), channel, []string{})
 			return
