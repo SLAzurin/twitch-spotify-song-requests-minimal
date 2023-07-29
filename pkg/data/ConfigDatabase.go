@@ -8,6 +8,7 @@ type ConfigDatabase struct {
 	TwitchSongReqestRewardID string `env:"TWITCH_SONG_REQUEST_REWARD_ID"`
 	SpotifyID                string `env:"SPOTIFY_ID"`
 	SpotifySecret            string `env:"SPOTIFY_SECRET"`
+	SpotifyRegion            string `env:"SPOTIFY_REGION"`
 }
 
 var AppCfg ConfigDatabase

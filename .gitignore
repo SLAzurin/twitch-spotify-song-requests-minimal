@@ -3,3 +3,4 @@ bot
 tokens/*.json
 errorlogs/*
 !errorlogs/.dummy
+.vscode
