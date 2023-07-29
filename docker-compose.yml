@@ -1,0 +1,28 @@
+version: "2.4"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - MAINFILE=app
+    volumes:
+      - ./errorlogs:/errorlogs
+      - ./tokens:/tokens
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - GIN_MODE=release
+  appws:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - MAINFILE=appws
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      - app
