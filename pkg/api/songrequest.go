@@ -161,6 +161,11 @@ func ProcessSongRequestSpotify(irc *IRCConn, channel string, permissionLevel int
 	}
 	TrackID := ""
 	for _, s := range brokenMsg {
+		if strings.Contains(s, "youtube.com") || strings.Contains(s, "youtu.be") {
+			// Ignore youtube song requests
+			irc.MsgChan <- Chat("Sorry I only support spotify!", channel, []string{})
+			return
+		}
 		if strings.HasPrefix(s, "spotify:track:") || strings.HasPrefix(s, "https://open.spotify.com/track/") {
 			if strings.HasPrefix(s, "https://open.spotify.com/track/") {
 				TrackID = strings.TrimPrefix(s, "https://open.spotify.com/track/")
