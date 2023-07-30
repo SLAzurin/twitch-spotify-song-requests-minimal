@@ -5,6 +5,7 @@ type ConfigDatabase struct {
 	TwitchAccount            string `env:"TWITCH_ACCOUNT"`
 	TwitchPassword           string `env:"TWITCH_PASSWORD"`
 	TwitchAPIClientID        string `env:"TWITCH_CLIENT_ID"`
+	TwitchPermsOverrideUsers string `env:"TWITCH_PERMS_OVERRIDE_USERS"`
 	TwitchSongReqestRewardID string `env:"TWITCH_SONG_REQUEST_REWARD_ID"`
 	SpotifyID                string `env:"SPOTIFY_ID"`
 	SpotifySecret            string `env:"SPOTIFY_SECRET"`

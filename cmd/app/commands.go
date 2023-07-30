@@ -1,7 +1,11 @@
 package main
 
 import (
+	"strings"
+
 	"github.com/slazurin/twitch-spotify-song-requests-minimal/pkg/api"
+	"github.com/slazurin/twitch-spotify-song-requests-minimal/pkg/data"
+	"github.com/slazurin/twitch-spotify-song-requests-minimal/pkg/utils"
 )
 
 /*
@@ -17,6 +21,11 @@ var AnyCommands = map[int]func(irc *api.IRCConn, incomingChannel string, user st
 var toggleSR = true
 
 func handleCommand(irc *api.IRCConn, incomingChannel string, user string, permissionLevel int, brokenMessage []string) {
+	for _, v := range strings.Split(data.AppCfg.TwitchPermsOverrideUsers, ",") {
+		if strings.EqualFold(utils.RawIRCUserToUsername(user), v) {
+			permissionLevel = 6
+		}
+	}
 
 	rCommandID := 0
 	switch brokenMessage[0] {
