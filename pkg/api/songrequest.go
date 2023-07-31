@@ -21,10 +21,13 @@ Adding channel for autosr: (nightbot just link rewardsmap)
 1) If using spotify, get credentials using cmd/spotifyoauth/main.go, and add them to tokens folder
 */
 
-var spotifyStates = map[string]struct {
+type SpotifyClientState struct {
 	SpotifyClient *spotify.Client
 	LastSkip      time.Time
-}{}
+	LastSongCmd   time.Time
+}
+
+var spotifyStates = map[string]SpotifyClientState{}
 
 func StartupSpotify() {
 	// setup app client
@@ -88,12 +91,10 @@ func StartupSpotify() {
 			spotifyauth.WithClientSecret(data.AppCfg.SpotifySecret),
 		).Client(context.Background(), &auth))
 
-		spotifyStates[strings.TrimSuffix(c, ".json")] = struct {
-			SpotifyClient *spotify.Client
-			LastSkip      time.Time
-		}{
+		spotifyStates[strings.TrimSuffix(c, ".json")] = SpotifyClientState{
 			SpotifyClient: userClient,
 			LastSkip:      time.Now(),
+			LastSongCmd:   time.Now(),
 		}
 		log.Println("Spotify client set for " + c)
 	}
@@ -137,6 +138,37 @@ func SkipSongSpotify(irc *IRCConn, channel string, user string, permissionLevel 
 	irc.MsgChan <- Chat("Skipped song", channel, []string{})
 }
 
+func CheckCurrentSongSpotify(irc *IRCConn, channel string, permissionLevel int, brokenMsg []string) {
+	live, err := utils.ChannelIsLive(irc.helixMainClient, strings.Trim(channel, "#"))
+	if err != nil {
+		irc.MsgChan <- Chat("I couldn't check if the broadcaster is live", channel, []string{})
+		return
+	}
+	if !live {
+		irc.MsgChan <- Chat("Broadcaster is not live you silly", channel, []string{})
+		return
+	}
+	var ok bool
+	var state SpotifyClientState
+	if state, ok = spotifyStates[channel]; !ok {
+		return
+	}
+	if state.SpotifyClient == nil {
+		return
+	}
+	now := time.Now()
+	if spotifyStates[channel].LastSongCmd.Add(time.Second * 10).After(now) {
+		return
+	}
+	queue, err := state.SpotifyClient.GetQueue(context.Background())
+	if err != nil {
+		irc.MsgChan <- Chat("Error: Couldn't check currently playing song "+err.Error(), channel, []string{})
+		return
+	}
+	irc.MsgChan <- Chat(queue.CurrentlyPlaying.Name+" by "+queue.CurrentlyPlaying.Artists[0].Name, channel, []string{})
+
+}
+
 func ProcessSongRequestSpotify(irc *IRCConn, channel string, permissionLevel int, brokenMsg []string) {
 	live, err := utils.ChannelIsLive(irc.helixMainClient, strings.Trim(channel, "#"))
 	if err != nil {
@@ -148,10 +180,7 @@ func ProcessSongRequestSpotify(irc *IRCConn, channel string, permissionLevel int
 		return
 	}
 	var ok bool
-	var state struct {
-		SpotifyClient *spotify.Client
-		LastSkip      time.Time
-	}
+	var state SpotifyClientState
 	if state, ok = spotifyStates[channel]; !ok {
 		return
 	}

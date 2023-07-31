@@ -13,9 +13,10 @@ Add commands under each channel here
 */
 
 var AnyCommands = map[int]func(irc *api.IRCConn, incomingChannel string, user string, permissionLevel int, brokenMessage []string){
-	1: toggleAutoSR,
-	2: commandSkipSongSpotify,
-	6: commandProcessSongRequestSpotify,
+	1:    toggleAutoSR,
+	2:    commandSkipSongSpotify,
+	6:    commandProcessSongRequestSpotify,
+	1001: commandSongSpotify,
 }
 
 var toggleSR = true
@@ -51,11 +52,19 @@ func handleCommand(irc *api.IRCConn, incomingChannel string, user string, permis
 			return
 		}
 		rCommandID = 1
+	case "!song":
+		fallthrough
+	case "!currentsong":
+		rCommandID = 1001
 	}
 
 	if f, ok := AnyCommands[rCommandID]; ok {
 		f(irc, incomingChannel, user, permissionLevel, brokenMessage)
 	}
+}
+
+func commandSongSpotify(irc *api.IRCConn, incomingChannel string, user string, permissionLevel int, brokenMessage []string) {
+	api.CheckCurrentSongSpotify(irc, incomingChannel, permissionLevel, brokenMessage)
 }
 
 func toggleAutoSR(irc *api.IRCConn, incomingChannel string, user string, permissionLevel int, brokenMessage []string) {
