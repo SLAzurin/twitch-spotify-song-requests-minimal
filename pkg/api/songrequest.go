@@ -165,6 +165,7 @@ func CheckCurrentSongSpotify(irc *IRCConn, channel string, permissionLevel int, 
 		irc.MsgChan <- Chat("Error: Couldn't check currently playing song "+err.Error(), channel, []string{})
 		return
 	}
+	state.LastSongCmd = now
 	irc.MsgChan <- Chat(queue.CurrentlyPlaying.Name+" by "+queue.CurrentlyPlaying.Artists[0].Name, channel, []string{})
 
 }
