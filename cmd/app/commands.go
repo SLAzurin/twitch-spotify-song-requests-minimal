@@ -2,6 +2,7 @@ package main
 
 import (
 	"strings"
+	"time"
 
 	"github.com/slazurin/twitch-spotify-song-requests-minimal/pkg/api"
 	"github.com/slazurin/twitch-spotify-song-requests-minimal/pkg/data"
@@ -17,6 +18,7 @@ var AnyCommands = map[int]func(irc *api.IRCConn, incomingChannel string, user st
 	2:    commandSkipSongSpotify,
 	6:    commandProcessSongRequestSpotify,
 	1001: commandSongSpotify,
+	1002: commandCommands,
 }
 
 var toggleSR = true
@@ -56,11 +58,26 @@ func handleCommand(irc *api.IRCConn, incomingChannel string, user string, permis
 		fallthrough
 	case "!currentsong":
 		rCommandID = 1001
+	case "!help":
+		fallthrough
+	case "!commands":
+		rCommandID = 1002
 	}
 
 	if f, ok := AnyCommands[rCommandID]; ok {
 		f(irc, incomingChannel, user, permissionLevel, brokenMessage)
 	}
+}
+
+var commandsLastUsed = time.Now().Add(-10 * time.Second)
+
+func commandCommands(irc *api.IRCConn, incomingChannel string, user string, permissionLevel int, brokenMessage []string) {
+	now := time.Now()
+	if commandsLastUsed.Add(time.Second * 10).After(now) {
+		return
+	}
+	irc.MsgChan <- api.Chat("https://gist.github.com/SLAzurin/0288acb14791164b0e91844a515b049c", incomingChannel, []string{})
+	commandsLastUsed = now
 }
 
 func commandSongSpotify(irc *api.IRCConn, incomingChannel string, user string, permissionLevel int, brokenMessage []string) {
