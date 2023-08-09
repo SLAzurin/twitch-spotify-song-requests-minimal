@@ -228,6 +228,11 @@ func ProcessSongRequestSpotify(irc *IRCConn, channel string, permissionLevel int
 		irc.MsgChan <- Chat("No results found on Spotify", channel, []string{})
 		return
 	}
+	// Check for song length
+	if result.Duration/1000 >= 360 { // 6 minutes
+		irc.MsgChan <- Chat("Is this really a song if it's longer than 6 minutes???", channel, []string{})
+		return
+	}
 	// Check if song is in queue already
 	queue, err := state.SpotifyClient.GetQueue(context.Background())
 	if err != nil {
