@@ -107,7 +107,7 @@ func SkipSongSpotify(irc *IRCConn, channel string, user string, permissionLevel 
 		return
 	}
 	if !live {
-		irc.MsgChan <- Chat("Broadcaster is not live you silly", channel, []string{})
+		irc.MsgChan <- Chat("Broadcaster is not live you sillyy", channel, []string{})
 		return
 	}
 	var ok bool
@@ -145,7 +145,7 @@ func CheckCurrentSongSpotify(irc *IRCConn, channel string, permissionLevel int, 
 		return
 	}
 	if !live {
-		irc.MsgChan <- Chat("Broadcaster is not live you silly", channel, []string{})
+		irc.MsgChan <- Chat("Broadcaster is not live you sillyy", channel, []string{})
 		return
 	}
 	var ok bool
@@ -177,7 +177,7 @@ func ProcessSongRequestSpotify(irc *IRCConn, channel string, user string, permis
 		return
 	}
 	if !live {
-		irc.MsgChan <- Chat("Broadcaster is not live you silly", channel, []string{})
+		irc.MsgChan <- Chat("Broadcaster is not live you sillyy", channel, []string{})
 		return
 	}
 	var ok bool
@@ -240,12 +240,12 @@ func ProcessSongRequestSpotify(irc *IRCConn, channel string, user string, permis
 		return
 	}
 	if queue.CurrentlyPlaying.ID.String() == TrackID {
-		irc.MsgChan <- Chat("It's the currently playing song you silly", channel, []string{})
+		irc.MsgChan <- Chat("It's the currently playing song you sillyy", channel, []string{})
 		return
 	}
 	for _, v := range queue.Items {
 		if v.ID.String() == TrackID {
-			irc.MsgChan <- Chat("That song is already queued you silly", channel, []string{})
+			irc.MsgChan <- Chat("That song is already queued you sillyy", channel, []string{})
 			return
 		}
 	}
