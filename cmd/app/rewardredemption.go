@@ -16,7 +16,7 @@ Add reward redemptions:
 */
 
 var logreward = log.New(os.Stdout, "REWARD ", log.Ldate|log.Ltime)
-var rewardsMap = map[string]func(*api.IRCConn, string, int, []string){
+var rewardsMap = map[string]func(*api.IRCConn, string, string, int, []string){
 	"sr_spotify": api.ProcessSongRequestSpotify,
 }
 
@@ -33,6 +33,6 @@ func handleRewards(irc *api.IRCConn, identity string, incomingChannel string, us
 
 	if f, ok := rewardsMap[rewardName]; ok {
 		logreward.Println(user+":", rewardName, brokenMessage)
-		f(irc, incomingChannel, permissionLevel, brokenMessage)
+		f(irc, incomingChannel, user, permissionLevel, brokenMessage)
 	}
 }

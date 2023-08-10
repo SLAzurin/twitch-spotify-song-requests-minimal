@@ -170,7 +170,7 @@ func CheckCurrentSongSpotify(irc *IRCConn, channel string, permissionLevel int, 
 
 }
 
-func ProcessSongRequestSpotify(irc *IRCConn, channel string, permissionLevel int, brokenMsg []string) {
+func ProcessSongRequestSpotify(irc *IRCConn, channel string, user string, permissionLevel int, brokenMsg []string) {
 	live, err := utils.ChannelIsLive(irc.helixMainClient, strings.Trim(channel, "#"))
 	if err != nil {
 		irc.MsgChan <- Chat("I couldn't check if the broadcaster is live", channel, []string{})
@@ -255,5 +255,5 @@ func ProcessSongRequestSpotify(irc *IRCConn, channel string, permissionLevel int
 		irc.MsgChan <- Chat("Error adding track to queue "+err.Error(), channel, []string{})
 		return
 	}
-	irc.MsgChan <- Chat("Added "+result.Name+" by "+result.Artists[0].Name+" to queue", channel, []string{})
+	irc.MsgChan <- Chat(utils.RawIRCUserToUsername(user)+" added "+result.Name+" by "+result.Artists[0].Name+" to queue", channel, []string{})
 }

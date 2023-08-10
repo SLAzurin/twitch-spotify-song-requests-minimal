@@ -95,7 +95,7 @@ func toggleAutoSR(irc *api.IRCConn, incomingChannel string, user string, permiss
 }
 
 func commandProcessSongRequestSpotify(irc *api.IRCConn, incomingChannel string, user string, permissionLevel int, brokenMessage []string) {
-	api.ProcessSongRequestSpotify(irc, incomingChannel, permissionLevel, brokenMessage)
+	api.ProcessSongRequestSpotify(irc, incomingChannel, user, permissionLevel, brokenMessage)
 }
 
 func commandSkipSongSpotify(irc *api.IRCConn, incomingChannel string, user string, permissionLevel int, brokenMessage []string) {
