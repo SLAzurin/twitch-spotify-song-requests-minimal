@@ -142,7 +142,7 @@ func SkipSongSpotify(irc *IRCConn, channel string, user string, permissionLevel 
 		irc.MsgChan <- Chat("Sorry I couldn't check if the broadcaster is live", channel, []string{})
 		return
 	}
-	if !live {
+	if !live && permissionLevel < 5 {
 		irc.MsgChan <- Chat("Broadcaster is not live you sillyy", channel, []string{})
 		return
 	}
@@ -176,7 +176,7 @@ func CheckCurrentSongSpotify(irc *IRCConn, channel string, permissionLevel int, 
 		irc.MsgChan <- Chat("I couldn't check if the broadcaster is live", channel, []string{})
 		return
 	}
-	if !live {
+	if !live && permissionLevel < 5 {
 		irc.MsgChan <- Chat("Broadcaster is not live you sillyy", channel, []string{})
 		return
 	}
@@ -210,7 +210,7 @@ func ShowQueue(irc *IRCConn, channel string, user string, permissionLevel int, b
 		irc.MsgChan <- Chat("I couldn't check if the broadcaster is live", channel, []string{})
 		return
 	}
-	if !live {
+	if !live && permissionLevel < 5 {
 		irc.MsgChan <- Chat("Broadcaster is not live you sillyy", channel, []string{})
 		return
 	}
@@ -249,7 +249,7 @@ func ProcessSongRequestSpotify(irc *IRCConn, channel string, user string, permis
 		irc.MsgChan <- Chat("I couldn't check if the broadcaster is live", channel, []string{})
 		return
 	}
-	if !live {
+	if !live && permissionLevel < 5 {
 		irc.MsgChan <- Chat("Broadcaster is not live you sillyy", channel, []string{})
 		return
 	}
