@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -27,6 +28,7 @@ type SpotifyClientState struct {
 	SpotifyClient *spotify.Client
 	LastSkip      time.Time
 	LastSongCmd   time.Time
+	LastQueueCmd  time.Time
 }
 
 var spotifyStates = map[string]SpotifyClientState{}
@@ -110,23 +112,15 @@ func StartupSpotify() {
 
 		spotifyStates[strings.TrimSuffix(c, ".json")] = SpotifyClientState{
 			SpotifyClient: userClient,
-			LastSkip:      time.Now(),
-			LastSongCmd:   time.Now(),
+			LastSkip:      time.Now().Add(-10 * time.Second),
+			LastSongCmd:   time.Now().Add(-10 * time.Second),
+			LastQueueCmd:  time.Now().Add(-1 * time.Minute),
 		}
 		log.Println("Spotify client set for " + c)
 	}
 }
 
 func SkipSongSpotify(irc *IRCConn, channel string, user string, permissionLevel int, brokenMessage []string) {
-	live, err := utils.ChannelIsLive(irc.helixMainClient, strings.Trim(channel, "#"))
-	if err != nil {
-		irc.MsgChan <- Chat("Sorry I couldn't check if the broadcaster is live", channel, []string{})
-		return
-	}
-	if !live {
-		irc.MsgChan <- Chat("Broadcaster is not live you sillyy", channel, []string{})
-		return
-	}
 	var ok bool
 	if _, ok = spotifyStates[channel]; !ok {
 		irc.MsgChan <- Chat("Uh... "+data.AppCfg.TwitchAccount+" broken ...", channel, []string{})
@@ -143,6 +137,15 @@ func SkipSongSpotify(irc *IRCConn, channel string, user string, permissionLevel 
 		irc.MsgChan <- Chat("Don't skip song too quickly!", channel, []string{})
 		return
 	}
+	live, err := utils.ChannelIsLive(irc.helixMainClient, strings.Trim(channel, "#"))
+	if err != nil {
+		irc.MsgChan <- Chat("Sorry I couldn't check if the broadcaster is live", channel, []string{})
+		return
+	}
+	if !live {
+		irc.MsgChan <- Chat("Broadcaster is not live you sillyy", channel, []string{})
+		return
+	}
 	newState := spotifyStates[channel]
 	newState.LastSkip = now
 	spotifyStates[channel] = newState
@@ -156,15 +159,6 @@ func SkipSongSpotify(irc *IRCConn, channel string, user string, permissionLevel 
 }
 
 func CheckCurrentSongSpotify(irc *IRCConn, channel string, permissionLevel int, brokenMsg []string) {
-	live, err := utils.ChannelIsLive(irc.helixMainClient, strings.Trim(channel, "#"))
-	if err != nil {
-		irc.MsgChan <- Chat("I couldn't check if the broadcaster is live", channel, []string{})
-		return
-	}
-	if !live {
-		irc.MsgChan <- Chat("Broadcaster is not live you sillyy", channel, []string{})
-		return
-	}
 	var ok bool
 	var state SpotifyClientState
 	if state, ok = spotifyStates[channel]; !ok {
@@ -175,6 +169,15 @@ func CheckCurrentSongSpotify(irc *IRCConn, channel string, permissionLevel int, 
 	}
 	now := time.Now()
 	if spotifyStates[channel].LastSongCmd.Add(time.Second * 10).After(now) {
+		return
+	}
+	live, err := utils.ChannelIsLive(irc.helixMainClient, strings.Trim(channel, "#"))
+	if err != nil {
+		irc.MsgChan <- Chat("I couldn't check if the broadcaster is live", channel, []string{})
+		return
+	}
+	if !live {
+		irc.MsgChan <- Chat("Broadcaster is not live you sillyy", channel, []string{})
 		return
 	}
 	queue, err := state.SpotifyClient.GetQueue(context.Background())
@@ -189,7 +192,19 @@ func CheckCurrentSongSpotify(irc *IRCConn, channel string, permissionLevel int, 
 
 }
 
-func ProcessSongRequestSpotify(irc *IRCConn, channel string, user string, permissionLevel int, brokenMsg []string) {
+func ShowQueue(irc *IRCConn, channel string, user string, permissionLevel int, brokenMsg []string) {
+	var ok bool
+	var state SpotifyClientState
+	if state, ok = spotifyStates[channel]; !ok {
+		return
+	}
+	if state.SpotifyClient == nil {
+		return
+	}
+	now := time.Now()
+	if spotifyStates[channel].LastQueueCmd.Add(time.Minute).After(now) {
+		return
+	}
 	live, err := utils.ChannelIsLive(irc.helixMainClient, strings.Trim(channel, "#"))
 	if err != nil {
 		irc.MsgChan <- Chat("I couldn't check if the broadcaster is live", channel, []string{})
@@ -199,6 +214,27 @@ func ProcessSongRequestSpotify(irc *IRCConn, channel string, user string, permis
 		irc.MsgChan <- Chat("Broadcaster is not live you sillyy", channel, []string{})
 		return
 	}
+	queue, err := state.SpotifyClient.GetQueue(context.Background())
+	if err != nil {
+		irc.MsgChan <- Chat("Error: Couldn't check currently playing song "+err.Error(), channel, []string{})
+		return
+	}
+	if len(queue.Items) < 5 {
+		irc.MsgChan <- Chat("Error: There is less than 5 songs in queue???", channel, []string{})
+		return
+	}
+	state.LastQueueCmd = now
+	msg := "Now: " + queue.CurrentlyPlaying.Name + " by " + queue.CurrentlyPlaying.Artists[0].Name + ", "
+	for i, v := range queue.Items {
+		if i > 4 {
+			break
+		}
+		msg += "#" + strconv.Itoa(i+1) + ": " + v.Name + " by " + v.Artists[0].Name + ", "
+	}
+	irc.MsgChan <- Chat(strings.TrimSuffix(msg, ", "), channel, []string{})
+}
+
+func ProcessSongRequestSpotify(irc *IRCConn, channel string, user string, permissionLevel int, brokenMsg []string) {
 	var ok bool
 	var state SpotifyClientState
 	if state, ok = spotifyStates[channel]; !ok {
@@ -206,6 +242,15 @@ func ProcessSongRequestSpotify(irc *IRCConn, channel string, user string, permis
 	}
 	if state.SpotifyClient == nil {
 		// log.Println("Error: Calling nil state.SpotifyClient fopr channel", channel)
+		return
+	}
+	live, err := utils.ChannelIsLive(irc.helixMainClient, strings.Trim(channel, "#"))
+	if err != nil {
+		irc.MsgChan <- Chat("I couldn't check if the broadcaster is live", channel, []string{})
+		return
+	}
+	if !live {
+		irc.MsgChan <- Chat("Broadcaster is not live you sillyy", channel, []string{})
 		return
 	}
 	TrackID := ""

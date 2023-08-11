@@ -19,6 +19,7 @@ var AnyCommands = map[int]func(irc *api.IRCConn, incomingChannel string, user st
 	6:    commandProcessSongRequestSpotify,
 	1001: commandSongSpotify,
 	1002: commandCommands,
+	1003: commandQueue,
 }
 
 var toggleSR = true
@@ -62,6 +63,10 @@ func handleCommand(irc *api.IRCConn, incomingChannel string, user string, permis
 		fallthrough
 	case "!commands":
 		rCommandID = 1002
+	case "!q":
+		fallthrough
+	case "!queue":
+		rCommandID = 1003
 	}
 
 	if f, ok := AnyCommands[rCommandID]; ok {
@@ -82,6 +87,9 @@ func commandCommands(irc *api.IRCConn, incomingChannel string, user string, perm
 
 func commandSongSpotify(irc *api.IRCConn, incomingChannel string, user string, permissionLevel int, brokenMessage []string) {
 	api.CheckCurrentSongSpotify(irc, incomingChannel, permissionLevel, brokenMessage)
+}
+func commandQueue(irc *api.IRCConn, incomingChannel string, user string, permissionLevel int, brokenMessage []string) {
+	api.ShowQueue(irc, incomingChannel, user, permissionLevel, brokenMessage)
 }
 
 func toggleAutoSR(irc *api.IRCConn, incomingChannel string, user string, permissionLevel int, brokenMessage []string) {
