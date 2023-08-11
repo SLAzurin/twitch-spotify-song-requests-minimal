@@ -9,7 +9,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/nicklaw5/helix/v2"
 	"github.com/slazurin/twitch-spotify-song-requests-minimal/pkg/data"
+	"github.com/slazurin/twitch-spotify-song-requests-minimal/pkg/syncx"
 	"github.com/slazurin/twitch-spotify-song-requests-minimal/pkg/utils"
 	"github.com/zmb3/spotify/v2"
 	spotifyauth "github.com/zmb3/spotify/v2/auth"
@@ -28,6 +30,21 @@ type SpotifyClientState struct {
 }
 
 var spotifyStates = map[string]SpotifyClientState{}
+
+var requesters = syncx.Map[string, string]{}
+
+func PeriodicallyCleanRequesters(client *helix.Client, channel string) {
+	for {
+		time.Sleep(time.Hour)
+		live, err := utils.ChannelIsLive(client, channel)
+		if err != nil {
+			continue
+		}
+		if !live {
+			requesters = syncx.Map[string, string]{}
+		}
+	}
+}
 
 func StartupSpotify() {
 	// setup app client
@@ -166,7 +183,9 @@ func CheckCurrentSongSpotify(irc *IRCConn, channel string, permissionLevel int, 
 		return
 	}
 	state.LastSongCmd = now
-	irc.MsgChan <- Chat(queue.CurrentlyPlaying.Name+" by "+queue.CurrentlyPlaying.Artists[0].Name, channel, []string{})
+	from, _ := requesters.Load(queue.CurrentlyPlaying.ID.String())
+
+	irc.MsgChan <- Chat(queue.CurrentlyPlaying.Name+" by "+queue.CurrentlyPlaying.Artists[0].Name+" Reqested by "+from, channel, []string{})
 
 }
 
@@ -255,5 +274,7 @@ func ProcessSongRequestSpotify(irc *IRCConn, channel string, user string, permis
 		irc.MsgChan <- Chat("Error adding track to queue "+err.Error(), channel, []string{})
 		return
 	}
-	irc.MsgChan <- Chat(utils.RawIRCUserToUsername(user)+" added "+result.Name+" by "+result.Artists[0].Name+" to queue", channel, []string{})
+	user = utils.RawIRCUserToUsername(user)
+	requesters.Store(TrackID, user)
+	irc.MsgChan <- Chat(user+" added "+result.Name+" by "+result.Artists[0].Name+" to queue", channel, []string{})
 }

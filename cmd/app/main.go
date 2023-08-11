@@ -31,6 +31,8 @@ func main() {
 		log.Fatalln(err)
 	}
 
+	go api.PeriodicallyCleanRequesters(helixMainClient, data.AppCfg.TwitchChannel)
+
 	go func() {
 		for {
 			ircConn, _ := api.RunIRC(bot, struct {
