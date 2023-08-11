@@ -190,9 +190,13 @@ func CheckCurrentSongSpotify(irc *IRCConn, channel string, permissionLevel int, 
 		return
 	}
 	state.LastSongCmd = now
-	from, _ := requesters.Load(queue.CurrentlyPlaying.ID.String())
+	from, ok := requesters.Load(queue.CurrentlyPlaying.ID.String())
+	msg := queue.CurrentlyPlaying.Name + " by " + queue.CurrentlyPlaying.Artists[0].Name
+	if ok {
+		msg += " Requested by " + from
+	}
 
-	irc.MsgChan <- Chat(queue.CurrentlyPlaying.Name+" by "+queue.CurrentlyPlaying.Artists[0].Name+" Reqested by "+from, channel, []string{})
+	irc.MsgChan <- Chat(msg, channel, []string{})
 
 }
 
