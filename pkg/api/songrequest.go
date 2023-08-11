@@ -190,6 +190,7 @@ func CheckCurrentSongSpotify(irc *IRCConn, channel string, permissionLevel int, 
 		return
 	}
 	state.LastSongCmd = now
+	spotifyStates[channel] = state
 	from, ok := requesters.Load(queue.CurrentlyPlaying.ID.String())
 	msg := queue.CurrentlyPlaying.Name + " by " + queue.CurrentlyPlaying.Artists[0].Name
 	if ok {
@@ -236,6 +237,7 @@ func ShowQueue(irc *IRCConn, channel string, user string, permissionLevel int, b
 		return
 	}
 	state.LastQueueCmd = now
+	spotifyStates[channel] = state
 	msg := "Now: " + queue.CurrentlyPlaying.Name + " by " + queue.CurrentlyPlaying.Artists[0].Name + ", "
 	for i, v := range queue.Items {
 		if i > 4 {
