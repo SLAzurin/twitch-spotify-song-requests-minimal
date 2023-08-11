@@ -81,7 +81,7 @@ func commandCommands(irc *api.IRCConn, incomingChannel string, user string, perm
 	if commandsLastUsed.Add(time.Second * 10).After(now) {
 		return
 	}
-	irc.MsgChan <- api.Chat("https://gist.github.com/SLAzurin/0288acb14791164b0e91844a515b049c", incomingChannel, []string{})
+	irc.MsgChan <- api.Chat(utils.RawIRCUserToUsername(user)+" https://gist.github.com/SLAzurin/0288acb14791164b0e91844a515b049c", incomingChannel, []string{})
 	commandsLastUsed = now
 }
 
