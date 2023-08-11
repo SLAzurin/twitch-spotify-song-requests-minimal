@@ -92,8 +92,15 @@ func commandQueue(irc *api.IRCConn, incomingChannel string, user string, permiss
 	api.ShowQueue(irc, incomingChannel, user, permissionLevel, brokenMessage)
 }
 
+var toggleAutoSRCD = time.Now().Add(-10 * time.Second)
+
 func toggleAutoSR(irc *api.IRCConn, incomingChannel string, user string, permissionLevel int, brokenMessage []string) {
+	now := time.Now()
+	if toggleAutoSRCD.Add(time.Second * 10).After(now) {
+		return
+	}
 	toggleSR = !toggleSR
+	toggleAutoSRCD = now
 
 	if toggleSR {
 		irc.MsgChan <- api.Chat("autosr is now on", incomingChannel, []string{})
