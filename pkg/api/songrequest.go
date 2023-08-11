@@ -185,6 +185,10 @@ func CheckCurrentSongSpotify(irc *IRCConn, channel string, permissionLevel int, 
 		irc.MsgChan <- Chat("Error: Couldn't check currently playing song "+err.Error(), channel, []string{})
 		return
 	}
+	if len(queue.Items) == 0 {
+		irc.MsgChan <- Chat("Broadcaster's Spotify is not found atm!", channel, []string{})
+		return
+	}
 	state.LastSongCmd = now
 	from, _ := requesters.Load(queue.CurrentlyPlaying.ID.String())
 
@@ -217,6 +221,10 @@ func ShowQueue(irc *IRCConn, channel string, user string, permissionLevel int, b
 	queue, err := state.SpotifyClient.GetQueue(context.Background())
 	if err != nil {
 		irc.MsgChan <- Chat("Error: Couldn't check currently playing song "+err.Error(), channel, []string{})
+		return
+	}
+	if len(queue.Items) == 0 {
+		irc.MsgChan <- Chat("Broadcaster's Spotify is not found atm!", channel, []string{})
 		return
 	}
 	if len(queue.Items) < 5 {
@@ -301,6 +309,10 @@ func ProcessSongRequestSpotify(irc *IRCConn, channel string, user string, permis
 	queue, err := state.SpotifyClient.GetQueue(context.Background())
 	if err != nil {
 		irc.MsgChan <- Chat("Error: Couldn't check if your song was already queued "+err.Error(), channel, []string{})
+		return
+	}
+	if len(queue.Items) == 0 {
+		irc.MsgChan <- Chat("Broadcaster's Spotify is not found atm!", channel, []string{})
 		return
 	}
 	if queue.CurrentlyPlaying.ID.String() == TrackID {
