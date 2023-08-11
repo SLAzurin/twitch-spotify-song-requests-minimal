@@ -103,6 +103,9 @@ func toggleAutoSR(irc *api.IRCConn, incomingChannel string, user string, permiss
 }
 
 func commandProcessSongRequestSpotify(irc *api.IRCConn, incomingChannel string, user string, permissionLevel int, brokenMessage []string) {
+	if !toggleSR {
+		return
+	}
 	api.ProcessSongRequestSpotify(irc, incomingChannel, user, permissionLevel, brokenMessage)
 }
 

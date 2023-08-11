@@ -27,7 +27,7 @@ func handleRewards(irc *api.IRCConn, identity string, incomingChannel string, us
 	rewardName := ""
 
 	// Add mechanism to detect which reward was claimed
-	if data.AppCfg.TwitchSongReqestRewardID == rewardID {
+	if data.AppCfg.TwitchSongReqestRewardID == rewardID && toggleSR {
 		rewardName = "sr_spotify"
 	}
 
