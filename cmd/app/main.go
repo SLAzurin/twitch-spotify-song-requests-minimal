@@ -25,7 +25,9 @@ func main() {
 
 	helixMainClient, err = helix.NewClient(&helix.Options{
 		ClientID:        data.AppCfg.TwitchAPIClientID,
+		ClientSecret:    data.AppCfg.TwitchAPIClientSecret,
 		UserAccessToken: data.AppCfg.TwitchPassword,
+		RefreshToken:    data.AppCfg.TwitchAPIRefreshToken,
 	})
 	if err != nil {
 		log.Fatalln(err)
