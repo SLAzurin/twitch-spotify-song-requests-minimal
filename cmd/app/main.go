@@ -37,13 +37,14 @@ func main() {
 
 	go func() {
 		for {
+			helixMainClient.GetUsers(&helix.UsersParams{})
 			ircConn, _ := api.RunIRC(bot, struct {
 				Password        string
 				Nickname        string
 				Channel         string
 				HelixMainClient *helix.Client
 			}{
-				Password:        data.AppCfg.TwitchPassword,
+				Password:        helixMainClient.GetUserAccessToken(),
 				Nickname:        data.AppCfg.TwitchAccount,
 				Channel:         data.AppCfg.TwitchChannel,
 				HelixMainClient: helixMainClient,
